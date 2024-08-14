@@ -15,6 +15,7 @@ void writeOutput();
 int getCardIndex(Card searchTerm);
 bool alreadyExists(Card searchTerm, vector<Card> list);
 void loadCardsToColumn();
+void loadCards();
 
 ifstream deckListFile, collectionFile;
 ofstream outputFile;
@@ -22,8 +23,7 @@ ofstream outputFile;
 vector<Card> deckListCards = vector<Card>();
 vector<Card> collectionCards = vector<Card>();
 
-
-void loadCards();
+QTableWidget *cardTableWidget;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -74,6 +74,14 @@ MainWindow::MainWindow(QWidget *parent)
     //cardListColumn;
 
     ui->setupUi(this);
+    cardTableWidget = ui->cardTableWidget;
+
+    QStringList headers = {"Number", "Name"};
+    cardTableWidget->setColumnCount(2);
+    cardTableWidget->setHorizontalHeaderLabels(headers);
+    cardTableWidget->setColumnWidth(0, 55);
+    cardTableWidget->setColumnWidth(1, 95);
+
 
     loadCards();
 
@@ -83,6 +91,8 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+
 
 void loadCards(){
 
@@ -100,6 +110,11 @@ void loadCards(){
 
 void loadCardsToColumn(){
 
+    for(Card c: collectionCards){
+        cardTableWidget->insertRow(cardTableWidget->rowCount());
+        cardTableWidget->setItem(cardTableWidget->rowCount()-1, 0, new QTableWidgetItem(c.count));
+        cardTableWidget->setItem(cardTableWidget->rowCount()-1, 1, new QTableWidgetItem(c.name));
+    }
 }
 
 void writeOutput() {
