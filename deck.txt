@@ -1,0 +1,81 @@
+1 Karlach, Fury of Avernus (SLD) 1802
+1 Sword Coast Sailor (CLB) 98
+1 Aggravated Assault (WOT) 76
+1 Ancient Copper Dragon (CLB) 396
+1 Ancient Silver Dragon (CLB) 56
+1 Arcane Signet (NCC) 360
+1 Blasphemous Act (WHO) 1063 *F*
+1 Brainstorm (C15) 90
+1 Captain Lannery Storm (LCC) 218
+1 Cascade Bluffs (BLC) 297
+1 Castle Embereth (ONC) 150
+1 Chaos Warp (OTC) 160
+1 Chromatic Orrery (PM21) 228p
+1 Combat Celebrant (BLC) 194
+1 Command Beacon (CMR) 349
+1 Command Tower (WHO) 266
+1 Counterspell (CMM) 630
+1 Deflecting Swat (C20) 50
+1 Dockside Extortionist (C19) 24
+1 Embercleave (PELD) 120p
+1 Esior, Wardwing Familiar (CMR) 67
+1 Etali, Primal Storm (BLC) 196
+1 Evolving Wilds (DMC) 208
+1 Excalibur, Sword of Eden (ACR) 169
+1 Ferrous Lake (BLC) 303
+1 Ghostly Pilferer (OTC) 98
+1 Goro-Goro, Disciple of Ryusei (NEO) 145
+1 Great Train Heist (POTJ) 125p
+3 Island (UST) 213
+1 Izzet Boilerworks (OTC) 302
+1 Jeska, Thrice Reborn (CMR) 513
+1 Kediss, Emberclaw Familiar (CMR) 188
+1 Komainu Battle Armor (NEC) 21
+1 Ledger Shredder (SNC) 46
+1 Lightning Greaves (C19) 217
+1 Lizard Blades (NEO) 153
+1 Mana Crypt (EMA) 225
+1 Mithril Coat (LTR) 379
+1 Moraug, Fury of Akoum (ZNR) 300
+18 Mountain (UST) 215
+1 Negate (BBD) 123
+1 Neheb, the Eternal (MKC) 158
+1 Port Razer (LCC) 230
+1 Professional Face-Breaker (PSNC) 116p
+1 Rabbit Battery (NEO) 157
+1 Ragavan, Nimble Pilferer (MH2) 138
+1 Relentless Assault (DDT) 54
+1 Reliquary Tower (BLC) 132
+1 Restless Spire (WOE) 260
+1 Rhystic Study (PLST) PCY-45
+1 Rising of the Day (LTR) 427
+1 Rivendell (LTR) 344
+1 Riverglide Pathway // Lavaglide Pathway (ZNR) 289
+1 Rogue's Passage (C19) 270
+1 Scourge of the Throne (MKC) 160
+1 Seize the Day (SLD) 1172
+1 Shadowspear (PTHB) 236p
+1 Shivan Reef (BLC) 331
+1 Siren Stormtamer (LCC) 171
+1 Sol Ring (C16) 272
+1 Solemn Simulacrum (BLC) 284
+1 Spellskite (MM2) 230
+1 Steam Vents (GRN) 257
+1 Storm Fleet Sprinter (RIX) 172
+1 Stormcarved Coast (WHO) 308
+1 Sulfur Falls (BLC) 333
+1 Swiftfoot Boots (A25) 234
+1 Sword of Feast and Famine (ACR) 261 *E*
+1 Sword of the Animist (E01) 89
+1 Sword of Wealth and Power (BIG) 26
+1 Temple of the False God (MKC) 305
+1 Temur Battle Rage (2XM) 146
+1 The Reaver Cleaver (M3C) 217
+1 Time Warp (STA) 22
+1 Training Center (CMM) 434
+1 Two-Handed Axe // Sweeping Cleave (CLB) 203
+1 Unleash Fury (M21) 170
+1 Urabrask the Hidden (CLB) 811
+1 Vandalblast (OTC) 183
+1 Whispersilk Cloak (DDE) 23
+1 Zariel, Archduke of Avernus (AFR) 172
