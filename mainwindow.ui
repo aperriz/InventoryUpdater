@@ -13,6 +13,19 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">*{
+	background-color:#1e1e1e;
+	color:white;
+}
+QTableWidget#cardTableWidget{
+	background-color:#2c3454; 
+	alternate-background-color:#353836;
+}
+QHeaderView::section{
+	background-color:#353836;
+}</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="1">
@@ -22,10 +35,22 @@
      <widget class="QTableWidget" name="cardTableWidget">
       <property name="maximumSize">
        <size>
-        <width>150</width>
+        <width>200</width>
         <height>16777215</height>
        </size>
       </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <attribute name="horizontalHeaderHighlightSections">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderHighlightSections">
+       <bool>false</bool>
+      </attribute>
      </widget>
     </item>
    </layout>
@@ -36,7 +61,7 @@
      <x>0</x>
      <y>0</y>
      <width>821</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuInventory_Updator">

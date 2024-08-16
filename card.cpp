@@ -1,5 +1,4 @@
 #include "card.h"
-#include <iostream>
 
 Card::Card() {
     count = 0;
@@ -18,10 +17,9 @@ Card::Card(int c, std::string n){
 bool Card::operator==(const Card& other){
 
     if(name == other.name){
-        std::cout << "card found" << std::endl;
+        //std::cout << "card found" << std::endl;
         return true;
     }
-
     return false;
 }
 

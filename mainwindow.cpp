@@ -16,9 +16,12 @@ int getCardIndex(Card searchTerm);
 bool alreadyExists(Card searchTerm, vector<Card> list);
 void loadCardsToColumn();
 void loadCards();
+void setupCardTableWidgit();
 
 ifstream deckListFile, collectionFile;
 ofstream outputFile;
+
+int row;
 
 vector<Card> deckListCards = vector<Card>();
 vector<Card> collectionCards = vector<Card>();
@@ -31,27 +34,27 @@ MainWindow::MainWindow(QWidget *parent)
 {
     cout << "init" << endl;
 
-    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Chose Deck List"), "C://", "Text Files (*.txt)");
+    // QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Chose Deck List"), "C://", "Text Files (*.txt)");
 
-    if(!filenames.isEmpty()){
-        std::string current_location_text= filenames[0].toLocal8Bit().constData();
-        deckListFile = ifstream(current_location_text.c_str());
+    // if(!filenames.isEmpty()){
+    //     std::string current_location_text= filenames[0].toLocal8Bit().constData();
+    //     deckListFile = ifstream(current_location_text.c_str());
 
-        string curLine;
-        if(deckListFile){
-            while(getline(deckListFile, curLine)){
-                cout << curLine << endl;
-            }
-        }
-        else{
-            cout << "File could not be opened." << endl;
-        }
-    }
-    else{
-        cout << "File not selected" << endl;
-    }
+    //     string curLine;
+    //     if(deckListFile){
+    //         // while(getline(deckListFile, curLine)){
+    //         //     cout << curLine << endl;
+    //         // }
+    //     }
+    //     else{
+    //         cout << "File could not be opened." << endl;
+    //     }
+    // }
+    // else{
+    //     cout << "File not selected" << endl;
+    // }
 
-    filenames = QFileDialog::getOpenFileNames(this, tr("Chose Collection List"), "C://", "Text Files (*.txt)");
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Chose Collection List"), "C://", "Text Files (*.txt)");
 
     if(!filenames.isEmpty()){
         std::string current_location_text= filenames[0].toLocal8Bit().constData();
@@ -59,9 +62,9 @@ MainWindow::MainWindow(QWidget *parent)
 
         string curLine;
         if(collectionFile){
-            while(getline(collectionFile, curLine)){
-                cout << curLine << endl;
-            }
+            // while(getline(collectionFile, curLine)){
+            //     cout << curLine << endl;
+            // }
         }
         else{
             cout << "File could not be opened." << endl;
@@ -76,13 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     cardTableWidget = ui->cardTableWidget;
 
-    QStringList headers = {"Number", "Name"};
-    cardTableWidget->setColumnCount(2);
-    cardTableWidget->setHorizontalHeaderLabels(headers);
-    cardTableWidget->setColumnWidth(0, 55);
-    cardTableWidget->setColumnWidth(1, 95);
-
-
+    setupCardTableWidgit();
     loadCards();
 
 }
@@ -92,28 +89,40 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
+void setupCardTableWidgit(){
+    QStringList headers = {"Number", "Name"};
+    cardTableWidget->setColumnCount(2);
+    cardTableWidget->setHorizontalHeaderLabels(headers);
+    cardTableWidget->setColumnWidth(0, 50);
+    cardTableWidget->setColumnWidth(1, 130);
+}
 
 void loadCards(){
 
-    if (deckListFile.is_open()) {
+    //if (deckListFile.is_open()) {
         if (collectionFile.is_open()) {
             loadFileToList();
             if (checkAgainstCollection()) {
-                writeOutput();
+                //writeOutput();
             }
             loadCardsToColumn();
         }
-    }
+    //}
 
 }
 
 void loadCardsToColumn(){
-
+    row = 0;
     for(Card c: collectionCards){
-        cardTableWidget->insertRow(cardTableWidget->rowCount());
-        cardTableWidget->setItem(cardTableWidget->rowCount()-1, 0, new QTableWidgetItem(c.count));
-        cardTableWidget->setItem(cardTableWidget->rowCount()-1, 1, new QTableWidgetItem(c.name));
+        cardTableWidget->insertRow(row);
+        QTableWidgetItem *countRow = new QTableWidgetItem(QString().fromStdString(to_string(c.count)));
+        countRow->setTextAlignment(Qt::AlignHCenter);
+
+        QTableWidgetItem *nameRow = new QTableWidgetItem(QString().fromStdString(c.name));
+
+        cardTableWidget->setItem(row, 0, countRow);
+        cardTableWidget->setItem(row, 1, nameRow);
+        row++;
     }
 }
 
@@ -144,24 +153,24 @@ void loadFileToList() {
     int x = 0;
 
     //Save deck list to vector
-    while (getline(deckListFile, curLine)) {
-        size_t end = curLine.find_first_not_of("0123456789");
-        temp = curLine.substr(end, curLine.size() - 1);
+    // while (getline(deckListFile, curLine)) {
+    //     size_t end = curLine.find_first_not_of("0123456789");
+    //     temp = curLine.substr(end, curLine.size() - 1);
 
-        string num = curLine.substr(0, end);
-        count = atoi(num.c_str());
+    //     string num = curLine.substr(0, end);
+    //     count = atoi(num.c_str());
 
-        Card tempCard = Card(0, temp);
+    //     Card tempCard = Card(0, temp);
 
-        //cout << count << endl << temp << endl;
-        if (alreadyExists(tempCard, deckListCards)) {
-            deckListCards[getCardIndex(tempCard)].count += count;
-        }
-        else {
-            Card newCard = Card(count, temp);
-            deckListCards.push_back(newCard);
-        }
-    }
+    //     //cout << count << endl << temp << endl;
+    //     if (alreadyExists(tempCard, deckListCards)) {
+    //         deckListCards[getCardIndex(tempCard)].count += count;
+    //     }
+    //     else {
+    //         Card newCard = Card(count, temp);
+    //         deckListCards.push_back(newCard);
+    //     }
+    // }
 
     //Save collection to vector
     while (getline(collectionFile, curLine)) {
@@ -183,19 +192,19 @@ void loadFileToList() {
         }
     }
 
-    deckListFile.close();
+    // deckListFile.close();
     collectionFile.close();
 
 }
 
 bool checkAgainstCollection() {
-    for (int i = 0; i < collectionCards.size(); i++) {
-        Card c = collectionCards[i];
-        if (find(collectionCards.begin(), collectionCards.end(), c) == collectionCards.end()) {
-            cout << "Card" << c.name << " does not exist in the collection!" << endl;
-            return false;
-        }
-    }
+    // for (int i = 0; i < collectionCards.size(); i++) {
+    //     Card c = deckListCards[i];
+    //     if (find(collectionCards.begin(), collectionCards.end(), c) == collectionCards.end()) {
+    //         cout << "Card" << c.name << " does not exist in the collection!" << endl;
+    //         return false;
+    //     }
+    // }
     return true;
 }
 
