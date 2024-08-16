@@ -9,6 +9,9 @@
 #include "card.h"
 using namespace std;
 
+//TODO: Seperate names into set, name, foil, etc. using find_first_of
+
+
 void loadFileToList();
 bool checkAgainstCollection();
 void writeOutput();
@@ -74,8 +77,6 @@ MainWindow::MainWindow(QWidget *parent)
         cout << "File not selected" << endl;
     }
 
-    //cardListColumn;
-
     ui->setupUi(this);
     cardTableWidget = ui->cardTableWidget;
 
@@ -89,12 +90,20 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::resizeEvent(QResizeEvent* event){
+    QMainWindow::resizeEvent(event);
+    int newWidth = (MainWindow::width() * 0.3) - 20;
+    cardTableWidget->setMaximumWidth(MainWindow::width()*.3);
+    cardTableWidget->setColumnWidth(0, newWidth*.25);
+    cardTableWidget->setColumnWidth(1, newWidth*.75);
+
+}
+
 void setupCardTableWidgit(){
     QStringList headers = {"Number", "Name"};
     cardTableWidget->setColumnCount(2);
     cardTableWidget->setHorizontalHeaderLabels(headers);
-    cardTableWidget->setColumnWidth(0, 50);
-    cardTableWidget->setColumnWidth(1, 130);
+
 }
 
 void loadCards(){
@@ -113,12 +122,14 @@ void loadCards(){
 
 void loadCardsToColumn(){
     row = 0;
-    for(Card c: collectionCards){
+
+    for(Card c : collectionCards){
+        cout << c.getName() << endl;
         cardTableWidget->insertRow(row);
-        QTableWidgetItem *countRow = new QTableWidgetItem(QString().fromStdString(to_string(c.count)));
+        QTableWidgetItem *countRow = new QTableWidgetItem(QString().fromStdString(to_string(c.getCount())));
         countRow->setTextAlignment(Qt::AlignHCenter);
 
-        QTableWidgetItem *nameRow = new QTableWidgetItem(QString().fromStdString(c.name));
+        QTableWidgetItem *nameRow = new QTableWidgetItem(QString().fromStdString(c.getName()));
 
         cardTableWidget->setItem(row, 0, countRow);
         cardTableWidget->setItem(row, 1, nameRow);
@@ -134,13 +145,13 @@ void writeOutput() {
     for (int i = 0; i < collectionCards.size(); i++) {
         int index = getCardIndex(collectionCards[i]);
         if (index == -1) {
-            outputFile << collectionCards[i].count << collectionCards[i].name << endl;
+            outputFile << collectionCards[i].getCount() << collectionCards[i].getName() << endl;
         }
         else {
             //Check if enough cards in collection.
-            int newCount = collectionCards[i].count - deckListCards[index].count;
+            int newCount = collectionCards[i].getCount() - deckListCards[index].getCount();
             if (newCount > 0) {
-                outputFile << newCount << collectionCards[i].count << endl;
+                outputFile << newCount << collectionCards[i].getCount() << endl;
             }
         }
     }
@@ -148,8 +159,7 @@ void writeOutput() {
 }
 
 void loadFileToList() {
-    string curLine, temp;
-    int count;
+    string curLine;
     int x = 0;
 
     //Save deck list to vector
@@ -164,7 +174,7 @@ void loadFileToList() {
 
     //     //cout << count << endl << temp << endl;
     //     if (alreadyExists(tempCard, deckListCards)) {
-    //         deckListCards[getCardIndex(tempCard)].count += count;
+    //         deckListCards[getCardIndex(tempCard)].getCount() += count;
     //     }
     //     else {
     //         Card newCard = Card(count, temp);
@@ -174,20 +184,33 @@ void loadFileToList() {
 
     //Save collection to vector
     while (getline(collectionFile, curLine)) {
+        int printIndex;
+        string name, foil, set, temp, print;
+        int count;
+
         size_t end = curLine.find_first_not_of("0123456789");
-        temp = curLine.substr(end, curLine.size() - 1);
+        temp = curLine.substr(end, curLine.length() - 1);
+        name = temp.substr(0, temp.find_first_of("("));
+        set = temp.substr(temp.find_first_of("("), 5);
+
+        if(temp.find_first_of("*") != variant_npos){
+            foil = temp.substr(temp.find_first_of(")") + 4, 10);
+        }
+
+        print = temp.substr(temp.find_first_of(")") + 1, 3);
+
 
         string num = curLine.substr(0, end);
         count = atoi(num.c_str());
-        Card tempCard = Card(0, temp);
 
-        //cout << count << endl << temp << endl;
+        Card tempCard = Card(0, name, print, set, foil);
+
         if (alreadyExists(tempCard, collectionCards)) {
-            collectionCards[getCardIndex(tempCard)].count += count;
+            collectionCards[getCardIndex(tempCard)].setCount(collectionCards[getCardIndex(tempCard)].getCount()+1);
         }
         else {
             //add card to vector
-            Card newCard = Card(count, temp);
+            Card newCard = Card(count, name, print, set, foil);
             collectionCards.push_back(newCard);
         }
     }
@@ -201,7 +224,7 @@ bool checkAgainstCollection() {
     // for (int i = 0; i < collectionCards.size(); i++) {
     //     Card c = deckListCards[i];
     //     if (find(collectionCards.begin(), collectionCards.end(), c) == collectionCards.end()) {
-    //         cout << "Card" << c.name << " does not exist in the collection!" << endl;
+    //         cout << "Card" << c.getName() << " does not exist in the collection!" << endl;
     //         return false;
     //     }
     // }
