@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include "card.h"
+#include <QPixmap>
 using namespace std;
 
 //TODO: Seperate names into set, name, foil, etc. using find_first_of
@@ -28,7 +29,9 @@ int row;
 
 vector<Card> deckListCards = vector<Card>();
 vector<Card> collectionCards = vector<Card>();
-
+QPixmap* pic;
+QLabel *cardImageLabel;
+QGridLayout *cardGrid;
 QTableWidget *cardTableWidget;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -79,10 +82,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     cardTableWidget = ui->cardTableWidget;
+    pic = new QPixmap("C:/Users/alecp/Documents/Qt Projects/InventoryUpdatercmr-170-court-of-ire.jpg");
+    cardImageLabel = ui->cardImageLabel;
+
+    cardImageLabel->setMinimumHeight(MainWindow::height()*.33);
+    cardImageLabel->setMinimumWidth(MainWindow::width()*.65);
+    cardImageLabel->setPixmap(pic->scaled(cardImageLabel->width(), cardImageLabel->height(), Qt::KeepAspectRatio));
+
+    cardGrid = ui->cardGrid;
 
     setupCardTableWidgit();
     loadCards();
-
+    this->setFixedSize(1000, 500);
 }
 
 MainWindow::~MainWindow()
@@ -96,14 +107,18 @@ void MainWindow::resizeEvent(QResizeEvent* event){
     cardTableWidget->setMaximumWidth(MainWindow::width()*.3);
     cardTableWidget->setColumnWidth(0, newWidth*.25);
     cardTableWidget->setColumnWidth(1, newWidth*.75);
+    cardImageLabel->setMinimumHeight(MainWindow::height()*.33);
+    cardImageLabel->setMinimumWidth(MainWindow::width()*.65);
+    cardImageLabel->setPixmap(pic->scaled(cardImageLabel->width(), cardImageLabel->height(), Qt::KeepAspectRatio));
 
+    MainWindow::setMinimumSize(0,0);
+    MainWindow::setMaximumSize(16777215, 16777215);
 }
 
 void setupCardTableWidgit(){
     QStringList headers = {"Number", "Name"};
     cardTableWidget->setColumnCount(2);
     cardTableWidget->setHorizontalHeaderLabels(headers);
-
 }
 
 void loadCards(){

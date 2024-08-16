@@ -24,6 +24,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         card.h card.cpp
+        apicalls.h apicalls.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET InventoryUpdater APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -69,3 +70,5 @@ install(TARGETS InventoryUpdater
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(InventoryUpdater)
 endif()
+
+
