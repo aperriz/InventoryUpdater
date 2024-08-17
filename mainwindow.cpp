@@ -82,18 +82,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     cardTableWidget = ui->cardTableWidget;
-    pic = new QPixmap("C:/Users/alecp/Documents/Qt Projects/InventoryUpdatercmr-170-court-of-ire.jpg");
+    pic = new QPixmap("C:/Users/alecp/Documents/Qt Projects/InventoryUpdater/cmr-170-court-of-ire.jpg");
     cardImageLabel = ui->cardImageLabel;
 
     cardImageLabel->setMinimumHeight(MainWindow::height()*.33);
     cardImageLabel->setMinimumWidth(MainWindow::width()*.65);
-    cardImageLabel->setPixmap(pic->scaled(cardImageLabel->width(), cardImageLabel->height(), Qt::KeepAspectRatio));
 
     cardGrid = ui->cardGrid;
 
     setupCardTableWidgit();
     loadCards();
-    this->setFixedSize(1000, 500);
 }
 
 MainWindow::~MainWindow()
@@ -104,10 +102,12 @@ MainWindow::~MainWindow()
 void MainWindow::resizeEvent(QResizeEvent* event){
     QMainWindow::resizeEvent(event);
     int newWidth = (MainWindow::width() * 0.3) - 20;
+
     cardTableWidget->setMaximumWidth(MainWindow::width()*.3);
     cardTableWidget->setColumnWidth(0, newWidth*.25);
     cardTableWidget->setColumnWidth(1, newWidth*.75);
-    cardImageLabel->setMinimumHeight(MainWindow::height()*.33);
+
+    cardImageLabel->setMinimumHeight(MainWindow::height()-100);
     cardImageLabel->setMinimumWidth(MainWindow::width()*.65);
     cardImageLabel->setPixmap(pic->scaled(cardImageLabel->width(), cardImageLabel->height(), Qt::KeepAspectRatio));
 
@@ -116,9 +116,12 @@ void MainWindow::resizeEvent(QResizeEvent* event){
 }
 
 void setupCardTableWidgit(){
-    QStringList headers = {"Number", "Name"};
+    QStringList headers = {"Count", "Name"};
     cardTableWidget->setColumnCount(2);
     cardTableWidget->setHorizontalHeaderLabels(headers);
+
+
+    cardImageLabel->setPixmap(pic->scaled(cardImageLabel->width(), cardImageLabel->height(), Qt::KeepAspectRatio));
 }
 
 void loadCards(){
