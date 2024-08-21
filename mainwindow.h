@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,6 +22,20 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void resizeEvent(QResizeEvent* event);
+    void showEvent(QShowEvent* event);
+private:
+    void queryImage(QUrl &searchUrl);
+    QNetworkAccessManager *manager;
+    QNetworkReply *reply;
+    void getImage(QString &imageUrl);
+    void updateText();
+private slots:
+    void on_cardTableWidget_cellClicked(int row, int column);
+    void onConnect(QNetworkReply *reply);
+    void imageDownloaded(QNetworkReply *reply);
+
+
+
 private:
     Ui::MainWindow *ui;
 };

@@ -8,6 +8,11 @@
 #include <algorithm>
 #include "card.h"
 #include <QPixmap>
+#include "ImageFetcher.h"
+#include <QObject>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
 using namespace std;
 
 //TODO: Seperate names into set, name, foil, etc. using find_first_of
@@ -21,18 +26,26 @@ bool alreadyExists(Card searchTerm, vector<Card> list);
 void loadCardsToColumn();
 void loadCards();
 void setupCardTableWidgit();
+bool loadSavedSettings();
+void firstTimeSetup();
+void firstLoadedScreen();
 
 ifstream deckListFile, collectionFile;
 ofstream outputFile;
-
+QStringList filenames;
 int row;
+string* settingsArray = new string[10];
+QString foilString;
+Card curC;
+
 
 vector<Card> deckListCards = vector<Card>();
 vector<Card> collectionCards = vector<Card>();
 QPixmap* pic;
-QLabel *cardImageLabel;
+QLabel *cardImageLabel, *countLabel, *foilLabel, *nameLabel, *printCodeLabel, *setCodeLabel;
 QGridLayout *cardGrid;
 QTableWidget *cardTableWidget;
+MainWindow* mainWindow;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -40,39 +53,81 @@ MainWindow::MainWindow(QWidget *parent)
 {
     cout << "init" << endl;
 
-    // QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Chose Deck List"), "C://", "Text Files (*.txt)");
+    mainWindow = this;
+    if(loadSavedSettings()){
+        filenames.append(QString().fromStdString(settingsArray[0]));
 
-    // if(!filenames.isEmpty()){
-    //     std::string current_location_text= filenames[0].toLocal8Bit().constData();
-    //     deckListFile = ifstream(current_location_text.c_str());
+        std::string current_location_text = filenames[0].toLocal8Bit().constData();
+        collectionFile = ifstream(current_location_text.c_str());
 
-    //     string curLine;
-    //     if(deckListFile){
-    //         // while(getline(deckListFile, curLine)){
-    //         //     cout << curLine << endl;
-    //         // }
-    //     }
-    //     else{
-    //         cout << "File could not be opened." << endl;
-    //     }
-    // }
-    // else{
-    //     cout << "File not selected" << endl;
-    // }
+        string curLine;
+        if(!collectionFile){
+            cout << "File could not be opened." << endl;
+            firstTimeSetup();
+        }
 
-    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Chose Collection List"), "C://", "Text Files (*.txt)");
+    }
+    else{
+        firstTimeSetup();
+    }
+
+    ui->setupUi(this);
+    cardTableWidget = ui->cardTableWidget;
+
+    cardImageLabel = ui->cardImageLabel;
+
+    cardImageLabel->setMinimumHeight(MainWindow::height()*.33);
+    cardImageLabel->setMinimumWidth(MainWindow::width()*.65);
+
+    cardGrid = ui->cardGrid;
+    countLabel = ui->countLabel;
+    foilLabel = ui->foilLabel;
+    nameLabel = ui->nameLabel;
+    printCodeLabel = ui->printCodeLabel;
+    setCodeLabel = ui->setCodeLabel;
+
+    manager = new QNetworkAccessManager();
+    manager->get(QNetworkRequest(QUrl("https://www.google.com")));
+    setupCardTableWidgit();
+    loadCards();
+
+}
+
+void MainWindow::showEvent(QShowEvent *event){
+    QMainWindow::showEvent(event);
+
+    firstLoadedScreen();
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void firstLoadedScreen(){
+    countLabel->setText(QString(""));
+    foilLabel->setText(QString(""));
+    printCodeLabel->setText(QString(""));
+    setCodeLabel->setText(QString(""));
+    nameLabel->setText(QString(""));
+
+    cardImageLabel->setMinimumHeight(mainWindow->height()-200);
+    cardImageLabel->setMinimumWidth(mainWindow->width()*.65);
+    cardImageLabel->setText("");
+}
+
+void firstTimeSetup(){
+    filenames = QFileDialog::getOpenFileNames(mainWindow, mainWindow->tr("Chose Collection List"), "C://", "Text Files (*.txt)");
+    ofstream newSettingsFile = ofstream("settings.txt");
 
     if(!filenames.isEmpty()){
         std::string current_location_text= filenames[0].toLocal8Bit().constData();
         collectionFile = ifstream(current_location_text.c_str());
 
+        newSettingsFile << current_location_text << endl;
+
         string curLine;
-        if(collectionFile){
-            // while(getline(collectionFile, curLine)){
-            //     cout << curLine << endl;
-            // }
-        }
-        else{
+        if(!collectionFile){
             cout << "File could not be opened." << endl;
         }
     }
@@ -80,23 +135,19 @@ MainWindow::MainWindow(QWidget *parent)
         cout << "File not selected" << endl;
     }
 
-    ui->setupUi(this);
-    cardTableWidget = ui->cardTableWidget;
-    pic = new QPixmap("C:/Users/alecp/Documents/Qt Projects/InventoryUpdater/cmr-170-court-of-ire.jpg");
-    cardImageLabel = ui->cardImageLabel;
-
-    cardImageLabel->setMinimumHeight(MainWindow::height()*.33);
-    cardImageLabel->setMinimumWidth(MainWindow::width()*.65);
-
-    cardGrid = ui->cardGrid;
-
-    setupCardTableWidgit();
-    loadCards();
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
+void resizeImage(){
+
+    cardImageLabel->setMinimumHeight(mainWindow->height()-200);
+    cardImageLabel->setMinimumWidth(mainWindow->width()*.65);
+
+    cardImageLabel->setMaximumHeight(mainWindow->height()-200);
+    cardImageLabel->setMaximumWidth(mainWindow->width()*.65);
+
+    if(pic != nullptr){
+        cardImageLabel->setPixmap(pic->scaled(cardImageLabel->width(), cardImageLabel->height(), Qt::KeepAspectRatio));
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event){
@@ -107,34 +158,57 @@ void MainWindow::resizeEvent(QResizeEvent* event){
     cardTableWidget->setColumnWidth(0, newWidth*.25);
     cardTableWidget->setColumnWidth(1, newWidth*.75);
 
-    cardImageLabel->setMinimumHeight(MainWindow::height()-100);
-    cardImageLabel->setMinimumWidth(MainWindow::width()*.65);
-    cardImageLabel->setPixmap(pic->scaled(cardImageLabel->width(), cardImageLabel->height(), Qt::KeepAspectRatio));
-
-    MainWindow::setMinimumSize(0,0);
-    MainWindow::setMaximumSize(16777215, 16777215);
+    resizeImage();
 }
+
 
 void setupCardTableWidgit(){
     QStringList headers = {"Count", "Name"};
     cardTableWidget->setColumnCount(2);
     cardTableWidget->setHorizontalHeaderLabels(headers);
+    cardTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    cardTableWidget->setFocusPolicy(Qt::NoFocus);
+    cardTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
+}
 
+bool loadSavedSettings(){
 
-    cardImageLabel->setPixmap(pic->scaled(cardImageLabel->width(), cardImageLabel->height(), Qt::KeepAspectRatio));
+    ifstream settingsFile = ifstream("settings.txt");
+    string curLine;
+
+    if(settingsFile.is_open() && settingsFile.good()){
+        cout << "Loaded file" << endl;
+        getline(settingsFile, curLine);
+        cout << curLine << endl;
+        if(curLine != ""){
+            cout << "empty file" << endl;
+            settingsArray[0] = curLine;
+            cout << settingsArray[0] << endl;
+            int i = 1;
+            while(getline(settingsFile, curLine)){
+                settingsArray[i] = curLine;
+                i++;
+            }
+            settingsFile.close();
+            cout << "true" << endl;
+            return true;
+        }
+        else{
+            settingsFile.close();
+        }
+    }
+
+    return false;
+
 }
 
 void loadCards(){
 
-    //if (deckListFile.is_open()) {
-        if (collectionFile.is_open()) {
-            loadFileToList();
-            if (checkAgainstCollection()) {
-                //writeOutput();
-            }
-            loadCardsToColumn();
-        }
-    //}
+
+    if (collectionFile.is_open()) {
+        loadFileToList();
+        loadCardsToColumn();
+    }
 
 }
 
@@ -145,7 +219,7 @@ void loadCardsToColumn(){
         cout << c.getName() << endl;
         cardTableWidget->insertRow(row);
         QTableWidgetItem *countRow = new QTableWidgetItem(QString().fromStdString(to_string(c.getCount())));
-        countRow->setTextAlignment(Qt::AlignHCenter);
+        countRow->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
         QTableWidgetItem *nameRow = new QTableWidgetItem(QString().fromStdString(c.getName()));
 
@@ -180,27 +254,7 @@ void loadFileToList() {
     string curLine;
     int x = 0;
 
-    //Save deck list to vector
-    // while (getline(deckListFile, curLine)) {
-    //     size_t end = curLine.find_first_not_of("0123456789");
-    //     temp = curLine.substr(end, curLine.size() - 1);
-
-    //     string num = curLine.substr(0, end);
-    //     count = atoi(num.c_str());
-
-    //     Card tempCard = Card(0, temp);
-
-    //     //cout << count << endl << temp << endl;
-    //     if (alreadyExists(tempCard, deckListCards)) {
-    //         deckListCards[getCardIndex(tempCard)].getCount() += count;
-    //     }
-    //     else {
-    //         Card newCard = Card(count, temp);
-    //         deckListCards.push_back(newCard);
-    //     }
-    // }
-
-    //Save collection to vector
+    //Save collection to list
     while (getline(collectionFile, curLine)) {
         int printIndex;
         string name, foil, set, temp, print;
@@ -208,14 +262,24 @@ void loadFileToList() {
 
         size_t end = curLine.find_first_not_of("0123456789");
         temp = curLine.substr(end, curLine.length() - 1);
-        name = temp.substr(0, temp.find_first_of("("));
-        set = temp.substr(temp.find_first_of("("), 5);
+        name = temp.substr(1, temp.find_first_of("(")-2);
+        set = temp.substr(temp.find_first_of("(")+1, 4);
+        string fixedSet = "";
 
-        if(temp.find_first_of("*") != variant_npos){
-            foil = temp.substr(temp.find_first_of(")") + 4, 10);
+
+        for(char ch : set){
+            if(isalnum(ch)){
+                fixedSet.push_back(ch);
+            }
         }
 
-        print = temp.substr(temp.find_first_of(")") + 1, 3);
+        set = fixedSet;
+
+        if(temp.find_first_of("*") != variant_npos){
+            foil = temp.substr(temp.find_last_of(" ") + 1, 10);
+        }
+
+        print = temp.substr(temp.find_first_of(")") + 2, 4);
 
 
         string num = curLine.substr(0, end);
@@ -232,21 +296,8 @@ void loadFileToList() {
             collectionCards.push_back(newCard);
         }
     }
-
-    // deckListFile.close();
     collectionFile.close();
 
-}
-
-bool checkAgainstCollection() {
-    // for (int i = 0; i < collectionCards.size(); i++) {
-    //     Card c = deckListCards[i];
-    //     if (find(collectionCards.begin(), collectionCards.end(), c) == collectionCards.end()) {
-    //         cout << "Card" << c.getName() << " does not exist in the collection!" << endl;
-    //         return false;
-    //     }
-    // }
-    return true;
 }
 
 int getCardIndex(Card searchTerm) {
@@ -267,3 +318,136 @@ bool alreadyExists(Card searchTerm, vector<Card> list) {
     }
     return false;
 }
+
+void MainWindow::on_cardTableWidget_cellClicked(int row, int column)
+{
+
+    if(column == 1){
+
+        Card c = collectionCards[row];
+        curC = c;
+        string name = "";
+
+        for(char ch: c.getName()){
+            if(isalnum(ch)){
+                name.push_back(ch);
+            }
+        }
+
+        string searchString = "https://api.scryfall.com/cards/search?q=\"" + c.getName() + "\"+set%3A\"" + c.getSet() + "\"+cn%3A\"" + c.getPrintCode() + "\"+is%3A";
+
+        foilString = ("Foil: ");
+
+        if(c.getFoil() == ""){
+            foilString.append("No");
+            searchString.append("nonfoil");
+        }
+        else if(c.getFoil() == "*E*"){
+            foilString.append("Etched");
+            searchString.append("etched");
+        }
+        else if(c.getFoil() == "*G*"){
+            foilString.append("Glossy");
+            searchString.append("glossy");
+        }
+        else if(c.getFoil() == "*F*"){
+            foilString.append("Normal Foil");
+            searchString.append("foil");
+        }
+        else{
+            foilString.append("Yes");
+            cout << c.getFoil() << endl;
+        }
+
+
+        QUrl searchUrl = QUrl(QString().fromStdString(searchString));
+
+        queryImage(searchUrl);
+
+
+    }
+}
+
+void MainWindow::queryImage(QUrl &searchUrl){
+
+    manager = new QNetworkAccessManager();
+
+    cout << searchUrl.toString().toStdString() << endl;
+
+    QNetworkRequest request(searchUrl);
+
+    reply = manager->get(request);
+
+    if(!reply){
+        qDebug() << "Failed to get reply";
+    }
+
+    connect(manager, &QNetworkAccessManager::finished, this, &MainWindow::onConnect);
+
+}
+
+void MainWindow::onConnect(QNetworkReply *reply){
+    qDebug() << "connected";
+
+    //cout << reply->read(10240).toStdString() << endl;
+
+    QByteArray jsonData = reply->readAll();
+
+    //cout << jsonData.toStdString() << endl;
+
+    //cout << endl << endl << endl;
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+
+    cout << jsonDoc.object().value("data").toString().toStdString();
+
+    cout << endl << endl << endl;
+
+    QJsonObject dataObj = jsonDoc.object();
+    QJsonValue dataVal = dataObj.value("data");
+    QJsonArray dataArr = dataVal.toArray();
+    QJsonValue imgVal = dataArr.at(0);
+    QJsonObject imgObj = imgVal.toObject();
+    QString imageUrl = imgObj["image_uris"].toObject().value("png").toString();
+
+    qDebug() << imageUrl;
+
+    getImage(imageUrl);
+
+}
+
+void MainWindow::getImage(QString &imageUrl){
+    disconnect(manager, &QNetworkAccessManager::finished, this, &MainWindow::onConnect);
+
+    reply = manager->get(QNetworkRequest(QUrl(imageUrl)));
+    cout << "submitted request" << endl;
+    connect(manager, &QNetworkAccessManager::finished, this, &MainWindow::imageDownloaded);
+}
+
+void MainWindow::imageDownloaded(QNetworkReply *reply){
+    cout << "got image" << endl;
+
+    QByteArray imgData = reply->readAll();
+
+    QImage img = QImage::fromData(imgData);
+    if(pic){
+        *pic = QPixmap::fromImage(img);
+    }
+    else{
+        pic = new QPixmap();
+        *pic = QPixmap::fromImage(img);
+    }
+
+    resizeImage();
+    updateText();
+}
+
+void MainWindow::updateText(){
+    countLabel->setText(QString().fromStdString("Count: " + to_string(curC.getCount())));
+    nameLabel->setText(QString().fromStdString(curC.getName()));
+    printCodeLabel->setText(QString().fromStdString("Collector Number: " + curC.getPrintCode()));
+    setCodeLabel->setText(QString().fromStdString("Set Code: " + curC.getSet()));
+    foilLabel->setText(foilString);
+}
+
+//Add count buttons and updates
