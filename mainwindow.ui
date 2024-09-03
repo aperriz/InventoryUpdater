@@ -43,8 +43,8 @@ QTableWidget#cardTableWidget{
 QHeaderView::section{
 	background-color:#353836;
 }
-QTableWidgetItem{
-	text-align:center;
+QPushButton{
+	background-color:#515752;
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -82,34 +82,8 @@ QTableWidgetItem{
     </item>
     <item row="0" column="1">
      <layout class="QGridLayout" name="cardGrid">
-      <item row="2" column="0">
-       <widget class="QLabel" name="setCodeLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="foilLabel">
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="printCodeLabel">
+       <widget class="QLabel" name="setCodeLabel">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -151,7 +125,13 @@ QTableWidgetItem{
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLabel" name="countLabel">
+       <widget class="QLabel" name="printCodeLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>TextLabel</string>
         </property>
@@ -159,6 +139,62 @@ QTableWidgetItem{
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="foilLabel">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="decreaseCountButton">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>-1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="countLabel">
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="increaseCountButton">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>+1</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>

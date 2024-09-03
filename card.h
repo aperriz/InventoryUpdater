@@ -20,6 +20,8 @@ public:
     std::string getSet();
     std::string getFoil();
     void setCount(int i);
+    std::string to_string();
+
 };
 
 #endif // CARD_H

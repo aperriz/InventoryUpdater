@@ -36,6 +36,10 @@ private slots:
 
 
 
+    void on_decreaseCountButton_clicked();
+
+    void on_increaseCountButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

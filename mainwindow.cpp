@@ -17,12 +17,11 @@ using namespace std;
 
 //TODO: Seperate names into set, name, foil, etc. using find_first_of
 
-
 void loadFileToList();
 bool checkAgainstCollection();
 void writeOutput();
-int getCardIndex(Card searchTerm);
-bool alreadyExists(Card searchTerm, vector<Card> list);
+int getCardIndex(Card *searchTerm);
+bool alreadyExists(Card *searchTerm, vector<Card*> list);
 void loadCardsToColumn();
 void loadCards();
 void setupCardTableWidgit();
@@ -33,19 +32,20 @@ void firstLoadedScreen();
 ifstream deckListFile, collectionFile;
 ofstream outputFile;
 QStringList filenames;
-int row;
+int row, activeRow;
 string* settingsArray = new string[10];
 QString foilString;
 Card curC;
 
 
-vector<Card> deckListCards = vector<Card>();
-vector<Card> collectionCards = vector<Card>();
+vector<Card*> deckListCards = vector<Card*>();
+vector<Card*> collectionCards = vector<Card*>();
 QPixmap* pic;
 QLabel *cardImageLabel, *countLabel, *foilLabel, *nameLabel, *printCodeLabel, *setCodeLabel;
 QGridLayout *cardGrid;
 QTableWidget *cardTableWidget;
 MainWindow* mainWindow;
+QPushButton* decreaseCountButton, *increaseCountButton;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -85,6 +85,8 @@ MainWindow::MainWindow(QWidget *parent)
     nameLabel = ui->nameLabel;
     printCodeLabel = ui->printCodeLabel;
     setCodeLabel = ui->setCodeLabel;
+    decreaseCountButton = ui->decreaseCountButton;
+    increaseCountButton = ui->increaseCountButton;
 
     manager = new QNetworkAccessManager();
     manager->get(QNetworkRequest(QUrl("https://www.google.com")));
@@ -114,6 +116,11 @@ void firstLoadedScreen(){
     cardImageLabel->setMinimumHeight(mainWindow->height()-200);
     cardImageLabel->setMinimumWidth(mainWindow->width()*.65);
     cardImageLabel->setText("");
+
+    decreaseCountButton->setVisible(false);
+    increaseCountButton->setVisible(false);
+
+    cardImageLabel->setVisible(false);
 }
 
 void firstTimeSetup(){
@@ -215,13 +222,13 @@ void loadCards(){
 void loadCardsToColumn(){
     row = 0;
 
-    for(Card c : collectionCards){
-        cout << c.getName() << endl;
+    for(Card *c : collectionCards){
+        cout << c->getName() << endl;
         cardTableWidget->insertRow(row);
-        QTableWidgetItem *countRow = new QTableWidgetItem(QString().fromStdString(to_string(c.getCount())));
+        QTableWidgetItem *countRow = new QTableWidgetItem(QString().fromStdString(to_string(c->getCount())));
         countRow->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
-        QTableWidgetItem *nameRow = new QTableWidgetItem(QString().fromStdString(c.getName()));
+        QTableWidgetItem *nameRow = new QTableWidgetItem(QString().fromStdString(c->getName()));
 
         cardTableWidget->setItem(row, 0, countRow);
         cardTableWidget->setItem(row, 1, nameRow);
@@ -233,21 +240,12 @@ void writeOutput() {
     //open output file
     outputFile = ofstream("out.txt");
 
-    //compare files
-    for (int i = 0; i < collectionCards.size(); i++) {
-        int index = getCardIndex(collectionCards[i]);
-        if (index == -1) {
-            outputFile << collectionCards[i].getCount() << collectionCards[i].getName() << endl;
-        }
-        else {
-            //Check if enough cards in collection.
-            int newCount = collectionCards[i].getCount() - deckListCards[index].getCount();
-            if (newCount > 0) {
-                outputFile << newCount << collectionCards[i].getCount() << endl;
-            }
-        }
+    for(Card *c : collectionCards){
+        outputFile << c->getCount() << " " << c->getName() << " (" << c->getSet() << ") " <<
+            c->getPrintCode() << " " << c->getFoil() << endl;
     }
 
+    outputFile.close();
 }
 
 void loadFileToList() {
@@ -285,22 +283,21 @@ void loadFileToList() {
         string num = curLine.substr(0, end);
         count = atoi(num.c_str());
 
-        Card tempCard = Card(0, name, print, set, foil);
+        Card *tempCard = new Card(0, name, print, set, foil);
 
         if (alreadyExists(tempCard, collectionCards)) {
-            collectionCards[getCardIndex(tempCard)].setCount(collectionCards[getCardIndex(tempCard)].getCount()+1);
+            collectionCards[getCardIndex(tempCard)]->setCount(collectionCards[getCardIndex(tempCard)]->getCount()+1);
         }
         else {
             //add card to vector
-            Card newCard = Card(count, name, print, set, foil);
-            collectionCards.push_back(newCard);
+            collectionCards.push_back(new Card(count, name, print, set, foil));
         }
     }
     collectionFile.close();
 
 }
 
-int getCardIndex(Card searchTerm) {
+int getCardIndex(Card *searchTerm) {
     auto pos = find(deckListCards.begin(), deckListCards.end(), searchTerm);
 
     if (pos != deckListCards.end()) {
@@ -312,7 +309,7 @@ int getCardIndex(Card searchTerm) {
 }
 
 //For cleanliness
-bool alreadyExists(Card searchTerm, vector<Card> list) {
+bool alreadyExists(Card *searchTerm, vector<Card*> list) {
     if (find(list.begin(), list.end(), searchTerm) != list.end()) {
         return true;
     }
@@ -321,42 +318,43 @@ bool alreadyExists(Card searchTerm, vector<Card> list) {
 
 void MainWindow::on_cardTableWidget_cellClicked(int row, int column)
 {
-
+    cout << row << endl;
     if(column == 1){
-
-        Card c = collectionCards[row];
-        curC = c;
+        cardImageLabel->setVisible(true);
+        activeRow = row;
+        Card *c = collectionCards[activeRow];
+        curC = *c;
         string name = "";
 
-        for(char ch: c.getName()){
+        for(char ch: c->getName()){
             if(isalnum(ch)){
                 name.push_back(ch);
             }
         }
 
-        string searchString = "https://api.scryfall.com/cards/search?q=\"" + c.getName() + "\"+set%3A\"" + c.getSet() + "\"+cn%3A\"" + c.getPrintCode() + "\"+is%3A";
+        string searchString = "https://api.scryfall.com/cards/search?q=\"" + c->getName() + "\"+set%3A\"" + c->getSet() + "\"+cn%3A\"" + c->getPrintCode() + "\"+is%3A";
 
         foilString = ("Foil: ");
 
-        if(c.getFoil() == ""){
+        if(c->getFoil() == ""){
             foilString.append("No");
             searchString.append("nonfoil");
         }
-        else if(c.getFoil() == "*E*"){
+        else if(c->getFoil() == "*E*"){
             foilString.append("Etched");
             searchString.append("etched");
         }
-        else if(c.getFoil() == "*G*"){
+        else if(c->getFoil() == "*G*"){
             foilString.append("Glossy");
             searchString.append("glossy");
         }
-        else if(c.getFoil() == "*F*"){
+        else if(c->getFoil() == "*F*"){
             foilString.append("Normal Foil");
             searchString.append("foil");
         }
         else{
             foilString.append("Yes");
-            cout << c.getFoil() << endl;
+            cout << c->getFoil() << endl;
         }
 
 
@@ -443,11 +441,58 @@ void MainWindow::imageDownloaded(QNetworkReply *reply){
 }
 
 void MainWindow::updateText(){
-    countLabel->setText(QString().fromStdString("Count: " + to_string(curC.getCount())));
-    nameLabel->setText(QString().fromStdString(curC.getName()));
-    printCodeLabel->setText(QString().fromStdString("Collector Number: " + curC.getPrintCode()));
-    setCodeLabel->setText(QString().fromStdString("Set Code: " + curC.getSet()));
+    countLabel->setText(QString().fromStdString("Count: " + to_string(collectionCards[activeRow]->getCount())));
+    nameLabel->setText(QString().fromStdString(collectionCards[activeRow]->getName()));
+    printCodeLabel->setText(QString().fromStdString("Collector Number: " + collectionCards[activeRow]->getPrintCode()));
+    setCodeLabel->setText(QString().fromStdString("Set Code: " + collectionCards[activeRow]->getSet()));
     foilLabel->setText(foilString);
+
+    if(!ui->decreaseCountButton->isVisible()){
+        ui->decreaseCountButton->setVisible(true);
+        ui->decreaseCountButton->setEnabled(true);
+    }
+    if(!ui->increaseCountButton->isVisible()){
+        ui->increaseCountButton->setVisible(true);
+        ui->increaseCountButton->setEnabled(true);
+    }
 }
 
-//Add count buttons and updates
+void MainWindow::on_decreaseCountButton_clicked()
+{
+    collectionCards[activeRow]->setCount(collectionCards[activeRow]->getCount() - 1);
+
+    if(collectionCards[activeRow]->getCount() > 0){
+        QTableWidgetItem *countRow = new QTableWidgetItem(QString().fromStdString(to_string(collectionCards[activeRow]->getCount())));
+        countRow->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+
+        cardTableWidget->setItem(activeRow, 0, countRow);
+        MainWindow::updateText();
+    }
+    else{
+        cardTableWidget->removeRow(activeRow);
+
+        auto it = std::find(collectionCards.begin(), collectionCards.end(), collectionCards[activeRow]);
+
+        delete *it;
+        collectionCards.erase(collectionCards.begin()+activeRow);
+        cout << collectionCards[activeRow]->to_string() << endl;
+        firstLoadedScreen();
+        cardImageLabel->clear();
+    }
+
+    writeOutput();
+}
+
+
+void MainWindow::on_increaseCountButton_clicked()
+{
+    collectionCards[activeRow]->setCount(collectionCards[activeRow]->getCount() + 1);
+
+    QTableWidgetItem *countRow = new QTableWidgetItem(QString().fromStdString(to_string(collectionCards[activeRow]->getCount())));
+    countRow->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+
+    cardTableWidget->setItem(activeRow, 0, countRow);
+    MainWindow::updateText();
+
+    writeOutput();
+}

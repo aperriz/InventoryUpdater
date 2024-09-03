@@ -62,3 +62,8 @@ void Card::setCount(int c){
 Card Card::copy(){
     return Card(count, name, printCode, setCode, foil);
 }
+
+
+std::string Card::to_string(){
+    return std::to_string(count) + " " + name + " (" + setCode + ") " + printCode + " " + foil;
+}
